@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.css"/>
+    <link rel="stylesheet" href="style.css">
+    <title>WebSocket Test</title>
+
+    <script language="javascript" type="text/javascript">
+
+        var url = "ws://192.168.0.17:1337/";
+        var output;
+        var button;
+        var context;
+        
+        // This is called when the page finishes loading
+        function init() {
+        
+            // Assign page elements to variables
+            button = document.getElementById("toggleButton");
+            output = document.getElementById("output");
+            
+            // Connect to WebSocket server
+            wsConnect(url);
+        }
+        
+        // Call this to connect to the WebSocket server
+        function wsConnect(url) {
+            
+            // Connect to WebSocket server
+            websocket = new WebSocket(url);
+            
+            // Assign callbacks
+            websocket.onopen = function(evt) { onOpen(evt) };
+            websocket.onclose = function(evt) { onClose(evt) };
+            websocket.onmessage = function(evt) { onMessage(evt) };
+            websocket.onerror = function(evt) { onError(evt) };
+        }
+        
+        // Called when a WebSocket connection is established with the server
+        function onOpen(evt) {
+        
+            // Log connection state
+            console.log("Connected");
+            
+            // Enable button
+            button.disabled = false;
+            
+            // Get the current state of the LED
+            doSend("getLEDState");
+        }
+        
+        // Called when the WebSocket connection is closed
+        function onClose(evt) {
+        
+            // Log disconnection state
+            console.log("Disconnected");
+            
+            // Disable button
+            button.disabled = true;
+            
+            // Try to reconnect after a few seconds
+            setTimeout(function() { wsConnect(url) }, 2000);
+        }
+        
+        // Called when a message is received from the server
+        function onMessage(evt) {
+        
+            // Print out our received message
+            console.log("Received: " + evt.data);
+            
+            // Update circle graphic with LED state
+            switch(evt.data) {
+                case "0":
+                    document.getElementById("toggleButton").checked = false;
+                    break;
+                case "1":
+                    document.getElementById("toggleButton").checked = true;
+                    break;
+                default:
+                    break;
+            }
+        }
+        
+        // Called when a WebSocket error occurs
+        function onError(evt) {
+            console.log("ERROR: " + evt.data);
+        }
+        
+        // Sends a message to the server (and prints it to the console)
+        function doSend(message) {
+            console.log("Sending: " + message);
+            websocket.send(message);
+        }
+        
+        // Called whenever the HTML button is pressed
+        function onPress() {
+            doSend("toggleLED");
+            doSend("getLEDState");
+        }
+        
+        // Call the init function as soon as the page loads
+        window.addEventListener("load", init, false);
+        
+        </script>
+
+</head>
+<body>  
+    <div class="container">
+        <h1>Choose your interest</h1>
+        <div class="row">
+          <label>
+            <input type="checkbox" id="toggleButton" onclick="onPress()">
+            <div class="icon-box">
+              <i class="fa fa-heart" aria-hidden="true"></i>
+              <span>Health</span>
+            </div>
+          </label>
+          <!--<label>
+            <input type="checkbox" name="" />
+            <div class="icon-box">
+              <i class="fa fa-music" aria-hidden="true"></i>
+              <span>Music</span>
+            </div>
+          </label>
+          <label>
+            <input type="checkbox" name="" />
+            <div class="icon-box">
+              <i class="fa fa-imdb" aria-hidden="true"></i>
+              <span> Movies </span>
+            </div>
+          </label>
+          <label>
+            <input type="checkbox" name="" />
+            <div class="icon-box">
+              <i class="fa fa-book" aria-hidden="true"></i>
+              <span>Books</span>
+            </div>
+          </label>
+  
+          <label>
+            <input type="checkbox" name="" />
+            <div class="icon-box">
+              <i class="fa fa-dribbble" aria-hidden="true"></i>
+              <span>Sports</span>
+            </div>
+          </label>
+  
+          <label>
+            <input type="checkbox" name="" />
+            <div class="icon-box">
+              <i class="fa fa-desktop" aria-hidden="true"></i>
+              <span>Technology</span>
+            </div>
+          </label>
+          <label>
+            <input type="checkbox" name="" />
+            <div class="icon-box">
+              <i class="fa fa-gamepad" aria-hidden="true"></i>
+              <span>Games</span>
+            </div>
+          </label>
+        -->
+        </div>
+      </div>
+</body>
+</html>

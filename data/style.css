@@ -1,0 +1,76 @@
+@import url("https://fonts.googleapis.com/css?family=Poppins:100,100i,200,200i,300,300i,400,400i,500,500i,600,600i,700,700i,800,800i,900,900i&subset=devanagari,latin-ext");
+
+* {
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+  font-family: "Poppins", sans-serif;
+}
+
+body {
+  background-color: #1b1c24;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+}
+
+.container h1 {
+  font-size: 18px;
+  line-height: 30px;
+  color: #f0eff3;
+  text-align: center;
+  position: relative;
+}
+
+.row {
+  margin: 20px;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr;
+}
+.row label {
+  padding: 20px;
+  cursor: pointer;
+  display: flex;
+}
+
+.row label input[type="checkbox"] {
+  display: none;
+}
+
+.row label .icon-box {
+  position: relative;
+  display: flex;
+  width: 120px;
+  padding: 20px;
+  flex-direction: column;
+  align-items: center;
+  background-color: #ececec;
+  color: #777777;
+  border-radius: 25px;
+  font-size: 21px;
+  transition: 0.5s;
+  user-select: none;
+}
+
+.row label input[type="checkbox"]:checked ~ .icon-box {
+    transition: all 0.7s ease;
+    background: linear-gradient(0deg, #3976f6, #578dff);
+    color: #fff;
+}
+
+.row label .icon-box span {
+  margin: 5px;
+  font-size: 18px;
+}
+
+.container .btn {
+  width: 130px;
+  height: 40px;
+  position: absolute;
+  left: 550px;
+  font-size: 16px;
+  border: 0;
+  outline: none;
+  transition: 0.5s cubic-bezier(0.755, 0.05, 0.855, 0.06);
+}
