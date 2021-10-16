@@ -1,245 +1,367 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.css"/>
-    <title>WebSocket Test</title>
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.css"
+    />
+    <title>Sistema de Control para Piscinas</title>
     <style>
       @import url("https://fonts.googleapis.com/css?family=Poppins:100,100i,200,200i,300,300i,400,400i,500,500i,600,600i,700,700i,800,800i,900,900i&subset=devanagari,latin-ext");
 
-* {
-  padding: 0;
-  margin: 0;
-  box-sizing: border-box;
-  font-family: "Poppins", sans-serif;
-}
+      * {
+        padding: 0;
+        margin: 0;
+        /*box-sizing: border-box;*/
+        font-family: "Poppins", sans-serif;
+      }
 
-body {
-  background-color: #1b1c24;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 100vh;
-}
+      html {
+        background: linear-gradient(120deg, #38a3eb, #0c5485, #1670ac) no-repeat
+          center center fixed;
+        -webkit-background-size: cover;
+        -moz-background-size: cover;
+        -o-background-size: cover;
+        background-size: cover;
+        overflow: hidden;
+      }
 
-.container h1 {
-  font-size: 18px;
-  line-height: 30px;
-  color: #f0eff3;
-  text-align: center;
-  position: relative;
-}
+      body {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-wrap: wrap;
+        align-content: center;
+        /*min-height: 100vh;*/
+      }
 
-.row {
-  margin: 20px;
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr 1fr;
-}
-.row label {
-  padding: 20px;
-  cursor: pointer;
-  display: flex;
-}
+      .container-title {
+        top: 0%;
+        padding-top: 5%;
+        width: 100vw;
+        height: 7vh;
+        background-color: rgba(255, 255, 255, 0.05);
+        box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(30px);
+        border-radius: 0 0 40px 40px;
+        position: absolute;
+        text-align: center;
+        justify-content: center;
+        padding-bottom: 8px;
+      }
+      .container-title h1 {
+        position: relative;
+        width: 100vw;
+        font-size: 20px; /* 14px*/
+        font-weight: 400;
+        color: #f0eff3;
+        vertical-align: middle;
+      }
 
-.row label input[type="checkbox"] {
-  display: none;
-}
+      .container {
+        /*background-color: #13203a57;
+        backdrop-filter: blur 10px;*/
 
-.row label .icon-box {
-  position: relative;
-  display: flex;
-  width: 120px;
-  padding: 20px;
-  flex-direction: column;
-  align-items: center;
-  background-color: #ececec;
-  color: #777777;
-  border-radius: 25px;
-  font-size: 21px;
-  transition: 0.5s;
-  user-select: none;
-}
+        /*BLUR SHIT*/
 
-.row label input[type="checkbox"]:checked ~ .icon-box {
-    transition: all 0.7s ease;
-    background: linear-gradient(0deg, #3976f6, #578dff);
-    color: #fff;
-}
+        background: rgba(255, 255, 255, 0);
+        box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(30px);
+        border: 1px solid rgba(255, 255, 255, 0.09);
+        border-radius: 25px;
 
-.row label .icon-box span {
-  margin: 5px;
-  font-size: 18px;
-}
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        /*border: 0.5px solid #FFFF00;*/
+        padding: 10px;
+        /*padding: 88px;*/
+        /*box-shadow: 1px 0 10px 10px rgba(0, 0, 0, 0.178);*/
+        display: flex;
+        justify-content: center;
+        flex-direction: column;
+      }
 
-.container .btn {
-  width: 130px;
-  height: 40px;
-  position: absolute;
-  left: 550px;
-  font-size: 16px;
-  border: 0;
-  outline: none;
-  transition: 0.5s cubic-bezier(0.755, 0.05, 0.855, 0.06);
-}
+      @media (min-width: 400px) {
+        .container {
+          flex-direction: row; /* QUERY */
+        }
+      }
+
+      .row {
+        margin: 5px;
+        display: flex;
+      }
+
+      .row label {
+        padding: 15px;
+        cursor: pointer;
+        display: flex;
+        justify-content: space-between;
+      }
+
+      .row label input[type="checkbox"] {
+        display: none;
+      }
+
+      .row label .icon-box {
+        /*position: relative;*/
+        display: flex;
+        width: 100px;
+        height: 100px;
+        /*padding: 5px;*/
+        flex-direction: column;
+        align-items: center;
+        background-color: rgba(255, 255, 255, 0.185);
+        /*border: 1px solid rgba(255, 255, 255, 0.185);*/
+        color: #fff; /* FONT COLOR */
+        border-radius: 20px;
+        font-size: 11px;
+        transition: 0.5s;
+        user-select: none;
+        justify-content: center;
+      }
+
+      .row label .icon-box img{
+        position: relative;
+        top: 0px;
+        width:50px;
+        padding: 0px;
+      }
+
+      .row label input[type="checkbox"]:checked ~ .icon-box {
+        transition: all 0.7s ease;
+        /*background: linear-gradient(0deg, #2650aa, #3a73ee);*/
+        background: linear-gradient(180deg, #3a73ee, #133c94);
+        /*background: linear-gradient(225deg, #26dd72, #1fb35d);*/
+        color: #fff;
+        box-shadow: 0px 0 8px 8px rgba(0, 0, 0, 0.2);
+        /*box-shadow: 5px 5px 5px 5px #00000040;*/
+      }
+      
+      .row label .icon-box .title {
+        position: relative;
+        top: 4px;
+        font-size: 15px;
+        font-weight: 600;
+      }
+
+      .state{
+        position: relative;
+        top: 1px;
+        font-size: 9px;
+      }
     </style>
     <script language="javascript" type="text/javascript">
+      var output;
+      var button;
+      var context;
 
-        var url = "ws://192.168.0.17:1337/";
-        var output;
-        var button;
-        var context;
-        
-        // This is called when the page finishes loading
-        function init() {
-        
-            // Assign page elements to variables
-            button = document.getElementById("toggleButton");
-            output = document.getElementById("output");
-            
-            // Connect to WebSocket server
-            wsConnect(url);
-        }
-        
-        // Call this to connect to the WebSocket server
-        function wsConnect(url) {
-            
-            // Connect to WebSocket server
-            websocket = new WebSocket(url);
-            
-            // Assign callbacks
-            websocket.onopen = function(evt) { onOpen(evt) };
-            websocket.onclose = function(evt) { onClose(evt) };
-            websocket.onmessage = function(evt) { onMessage(evt) };
-            websocket.onerror = function(evt) { onError(evt) };
-        }
-        
-        // Called when a WebSocket connection is established with the server
-        function onOpen(evt) {
-        
-            // Log connection state
-            console.log("Connected");
-            
-            // Enable button
-            button.disabled = false;
-            
-            // Get the current state of the LED
-            doSend("getLEDState");
-        }
-        
-        // Called when the WebSocket connection is closed
-        function onClose(evt) {
-        
-            // Log disconnection state
-            console.log("Disconnected");
-            
-            // Disable button
-            button.disabled = true;
-            
-            // Try to reconnect after a few seconds
-            setTimeout(function() { wsConnect(url) }, 2000);
-        }
-        
-        // Called when a message is received from the server
-        function onMessage(evt) {
-        
-            // Print out our received message
-            console.log("Received: " + evt.data);
-            
-            // Update circle graphic with LED state
-            switch(evt.data) {
-                case "0":
-                    document.getElementById("toggleButton").checked = false;
-                    break;
-                case "1":
-                    document.getElementById("toggleButton").checked = true;
-                    break;
-                default:
-                    break;
-            }
-        }
-        
-        // Called when a WebSocket error occurs
-        function onError(evt) {
-            console.log("ERROR: " + evt.data);
-        }
-        
-        // Sends a message to the server (and prints it to the console)
-        function doSend(message) {
-            console.log("Sending: " + message);
-            websocket.send(message);
-        }
-        
-        // Called whenever the HTML button is pressed
-        function onPress() {
-            doSend("toggleLED");
-            doSend("getLEDState");
-        }
-        
-        // Call the init function as soon as the page loads
-        window.addEventListener("load", init, false);
-        
-        </script>
+      // This is called when the page finishes loading
+      function init() {
+        //alert(window.location);
 
-</head>
-<body>  
+        /*"ws://192.168.0.17:1337/";*/
+
+        var url = window.location.host;
+        url = "ws://" + url + ":1337/";
+
+        // Assign page elements to variables
+        button = document.getElementById("lightBtn");
+
+        // Connect to WebSocket server
+        wsConnect(url);
+      }
+
+      // Call this to connect to the WebSocket server
+      function wsConnect(url) {
+        // Connect to WebSocket server
+        websocket = new WebSocket(url);
+
+        // Assign callbacks
+        websocket.onopen = function (evt) {
+          onOpen(evt);
+        };
+        websocket.onclose = function (evt) {
+          onClose(evt);
+        };
+        websocket.onmessage = function (evt) {
+          onMessage(evt);
+        };
+        websocket.onerror = function (evt) {
+          onError(evt);
+        };
+      }
+
+      // Called when a WebSocket connection is established with the server
+      function onOpen(evt) {
+        // Log connection state
+        console.log("Connected");
+
+        // Get the current state of the OUTPUTS
+        doSend("getLIGHTState");
+        doSend("getFILTERState");
+        doSend("getCASCADEState");
+        doSend("getJACUZZIState");
+      }
+
+      // Called when the WebSocket connection is closed
+      function onClose(evt) {
+        // Log disconnection state
+        console.log("Disconnected");
+
+        // Disable button
+        button.disabled = true;
+
+        // Try to reconnect after a few seconds
+        setTimeout(function () {
+          wsConnect(url);
+        }, 2000);
+      }
+
+      // Called when a message is received from the server
+      function onMessage(evt) {
+        // Print out our received message
+        console.log("Received: " + evt.data);
+
+        // Update circle graphic with LED state
+        switch (evt.data) {
+          case "L0":
+            document.getElementById("light").src="lights_off";
+            document.getElementById("light-state").innerHTML = "APAGADO";
+            document.getElementById("lightBtn").checked = false;
+            break;
+          case "L1":
+          document.getElementById("light").src="lights";  
+          document.getElementById("light-state").innerHTML = "ENCENDIDO";
+          document.getElementById("lightBtn").checked = true;
+            break;
+
+          case "F0":
+          document.getElementById("filter").src="filter_off";
+          document.getElementById("filter-state").innerHTML = "APAGADO";
+            document.getElementById("filterBtn").checked = false;
+            break;
+          case "F1":
+          document.getElementById("filter").src="filter";
+          document.getElementById("filter-state").innerHTML = "ENCENDIDO";
+            document.getElementById("filterBtn").checked = true;
+            break;
+
+          case "C0":
+            document.getElementById("waterfall").src="waterfall_off";
+            document.getElementById("waterfall-state").innerHTML = "APAGADO";
+            document.getElementById("cascadeBtn").checked = false;
+            break;
+          case "C1":
+            document.getElementById("waterfall").src="waterfall";
+            document.getElementById("waterfall-state").innerHTML = "ENCENDIDO";
+            document.getElementById("cascadeBtn").checked = true;
+            break;
+
+          case "J0":
+          document.getElementById("jacuzzi").src="jacuzzi_off";
+          document.getElementById("jacuzzi-state").innerHTML = "APAGADO";
+            document.getElementById("jacuzziBtn").checked = false;
+            break;
+          case "J1":
+          document.getElementById("jacuzzi").src="jacuzzi";
+          document.getElementById("jacuzzi-state").innerHTML = "ENCENDIDO";
+            document.getElementById("jacuzziBtn").checked = true;
+            break;
+
+          default:
+            break;
+        }
+      }
+
+      // Called when a WebSocket error occurs
+      function onError(evt) {
+        console.log("ERROR: " + evt.data);
+      }
+
+      // Sends a message to the server (and prints it to the console)
+      function doSend(message) {
+        console.log("Sending: " + message);
+        websocket.send(message);
+      }
+
+      // Called whenever the HTML button is pressed
+      function onPress(id) {
+        doSend(id);
+        switch (id) {
+          case "lightBtn":
+            doSend("getLIGHTState");
+            break;
+          case "filterBtn":
+            doSend("getFILTERState");
+            break;
+          case "cascadeBtn":
+            doSend("getCASCADEState");
+            break;
+          case "jacuzziBtn":
+            doSend("getJACUZZIState");
+            break;
+          default:
+            break;
+        }
+      }
+
+      // Call the init function as soon as the page loads
+      window.addEventListener("load", init, false);
+    </script>
+  </head>
+  <body>
+    <div class="container-title">
+      <h1>Sistema de Control para Piscina</h1>
+    </div>
     <div class="container">
-        <h1>Choose your interest</h1>
-        <div class="row">
-          <label>
-            <input type="checkbox" id="toggleButton" onclick="onPress()">
-            <div class="icon-box">
-              <i class="fa fa-heart" aria-hidden="true"></i>
-              <span>Health</span>
-            </div>
-          </label>
-          <!--<label>
-            <input type="checkbox" name="" />
-            <div class="icon-box">
-              <i class="fa fa-music" aria-hidden="true"></i>
-              <span>Music</span>
-            </div>
-          </label>
-          <label>
-            <input type="checkbox" name="" />
-            <div class="icon-box">
-              <i class="fa fa-imdb" aria-hidden="true"></i>
-              <span> Movies </span>
-            </div>
-          </label>
-          <label>
-            <input type="checkbox" name="" />
-            <div class="icon-box">
-              <i class="fa fa-book" aria-hidden="true"></i>
-              <span>Books</span>
-            </div>
-          </label>
-  
-          <label>
-            <input type="checkbox" name="" />
-            <div class="icon-box">
-              <i class="fa fa-dribbble" aria-hidden="true"></i>
-              <span>Sports</span>
-            </div>
-          </label>
-  
-          <label>
-            <input type="checkbox" name="" />
-            <div class="icon-box">
-              <i class="fa fa-desktop" aria-hidden="true"></i>
-              <span>Technology</span>
-            </div>
-          </label>
-          <label>
-            <input type="checkbox" name="" />
-            <div class="icon-box">
-              <i class="fa fa-gamepad" aria-hidden="true"></i>
-              <span>Games</span>
-            </div>
-          </label>
-        -->
-        </div>
+      <div class="row">
+        <label>
+          <input type="checkbox" id="lightBtn" onclick="onPress(this.id)" />
+          <div class="icon-box">
+            <!--<i class="fa fa-heart" aria-hidden="true"></i>-->
+            <img id="light" src="/img/lights_off.png"></img>
+            <span class ="title">LUCES</span>
+            <span id ="light-state" class="state">APAGADO</span>
+          </div>
+        </label>
+        <label>
+          <input type="checkbox" id="filterBtn" onclick="onPress(this.id)" />
+          <div class="icon-box">
+            <!--<i class="fa fa-music" aria-hidden="true"></i>-->
+            <img id="filter" src="filter_off"></img>
+            <span class ="title">FILTRO</span>
+            <span id ="filter-state" class="state">APAGADO</span>
+          </div>
+        </label>
       </div>
-</body>
+      <div class="row">
+        <label>
+          <input type="checkbox" id="cascadeBtn" onclick="onPress(this.id)" />
+          <div class="icon-box">
+            <!--<i class="fa fa-imdb" aria-hidden="true"></i>-->
+            <img id="waterfall" src="waterfall_off"></img>
+            <span class ="title">CASCADA</span>
+            <span id ="waterfall-state" class="state">APAGADO</span>
+          </div>
+        </label>
+        <label>
+          <input type="checkbox" id="jacuzziBtn" onclick="onPress(this.id)" />
+          <div class="icon-box">
+            <!--<i class="fa fa-book" aria-hidden="true"></i>-->
+            <img id="jacuzzi" src="jacuzzi_off"></img>
+            <span class ="title">JACUZZI</span>
+            <span id ="jacuzzi-state" class="state">APAGADO</span>
+          </div>
+        </label>
+      </div>
+    </div>
+  </body>
 </html>

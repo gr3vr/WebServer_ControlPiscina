@@ -4,26 +4,34 @@
 #include <ESPAsyncWebServer.h>
 #include <WebSocketsServer.h>
 
+#define ssid_address  1
+#define pass_address  2
+#define state_address  3
+
 // Constants
 
 //const char  *ssid = "PoolControlSystem";
 //const char  *password =  "12345678";
 
-const char  *ssid = "";
-const char  *password = "";
+const char  *ssid = "TopGun";
+const char  *password = "Maveric-k";
 
 const char  *PARAM_INPUT_1 = "input1";
 const char  *PARAM_INPUT_2 = "input2";
-
 
 const char  *soft_ap_ssid = "SistemaControlPiscina";
 const char  *soft_ap_password = "12345678";
 
 const char  *msg_toggle_led = "toggleLED";
 const char  *msg_get_led = "getLEDState";
+
 const int   http_port = 80;
 const int   ws_port = 1337;
-const int   led_pin = 2;
+
+const int   lights = 2;
+const int   filter = 16;
+const int   cascade = 17;
+const int   jacuzzi = 18;
 
 int ip;
 
@@ -31,7 +39,11 @@ int ip;
 AsyncWebServer server(http_port);
 WebSocketsServer webSocket = WebSocketsServer(ws_port);
 char msg_buf[10];
-int led_state = 0;
+
+int light_state = 0;
+int filter_state = 0;
+int cascade_state = 0;
+int jacuzzi_state = 0;
 
 /***********************************************************
    Functions
@@ -66,15 +78,51 @@ void onWebSocketEvent(uint8_t client_num,
       // Print out raw message
       Serial.printf("[%u] Received text: %s\n", client_num, payload);
 
-      // Toggle LED
-      if ( strcmp((char *)payload, "toggleLED") == 0 ) {
-        led_state = led_state ? 0 : 1;
-        Serial.printf("Toggling LED to %u\n", led_state);
-        digitalWrite(led_pin, led_state);
+      // Toggle Lights
+      if ( strcmp((char *)payload, "lightBtn") == 0 ) {
+        light_state = light_state ? 0 : 1;
+        Serial.printf("Toggling LIGHT to %u\n", light_state);
+        digitalWrite(lights, light_state);
 
-        // Report the state of the LED
-      } else if ( strcmp((char *)payload, "getLEDState") == 0 ) {
-        sprintf(msg_buf, "%d", led_state);
+        // Toggle Filter
+      } else if ( strcmp((char *)payload, "filterBtn") == 0 ) {
+        filter_state = filter_state ? 0 : 1;
+        Serial.printf("Toggling FILTER to %u\n", filter_state);
+        digitalWrite(filter, filter_state);
+
+        // Toggle Cascade
+      } else if ( strcmp((char *)payload, "cascadeBtn") == 0 ) {
+        cascade_state = cascade_state ? 0 : 1;
+        Serial.printf("Toggling CASCADE to %u\n", cascade_state);
+        digitalWrite(cascade, cascade_state);
+
+        // Toggle Jacuzzi
+      } else if ( strcmp((char *)payload, "jacuzziBtn") == 0 ) {
+        jacuzzi_state = jacuzzi_state ? 0 : 1;
+        Serial.printf("Toggling JACUZZI to %u\n", jacuzzi_state);
+        digitalWrite(jacuzzi, jacuzzi_state);
+
+        // Report the state of the LIGHT
+      } else if ( strcmp((char *)payload, "getLIGHTState") == 0 ) {
+        sprintf(msg_buf, "L%d", light_state);
+        Serial.printf("Sending to [%u]: %s\n", client_num, msg_buf);
+        webSocket.broadcastTXT(msg_buf);
+
+        // Message not recognized
+      } else if ( strcmp((char *)payload, "getFILTERState") == 0 ) {
+        sprintf(msg_buf, "F%d", filter_state);
+        Serial.printf("Sending to [%u]: %s\n", client_num, msg_buf);
+        webSocket.broadcastTXT(msg_buf);
+
+        // Message not recognized
+      } else if ( strcmp((char *)payload, "getCASCADEState") == 0 ) {
+        sprintf(msg_buf, "C%d", cascade_state);
+        Serial.printf("Sending to [%u]: %s\n", client_num, msg_buf);
+        webSocket.broadcastTXT(msg_buf);
+
+        // Message not recognized
+      } else if ( strcmp((char *)payload, "getJACUZZIState") == 0 ) {
+        sprintf(msg_buf, "J%d", jacuzzi_state);
         Serial.printf("Sending to [%u]: %s\n", client_num, msg_buf);
         webSocket.broadcastTXT(msg_buf);
 
@@ -96,11 +144,6 @@ void onWebSocketEvent(uint8_t client_num,
   }
 }
 
-// Callback: send homepage
-void onIndexRequest(AsyncWebServerRequest *request) {
-
-}
-
 // Callback: send style sheet
 void onCSSRequest(AsyncWebServerRequest *request) {
   IPAddress remote_ip = request->client()->remoteIP();
@@ -119,7 +162,7 @@ void onPageNotFound(AsyncWebServerRequest *request) {
 
 String readIP() {
   if (WiFi.status() == WL_CONNECTED) {
-    
+
     return (WiFi.localIP().toString());
   }
   return String("DESCONECTADO");
@@ -127,19 +170,18 @@ String readIP() {
 
 void initSTA() {
   if ((ssid != "") && (password != "")) {
-    int tryCount;
-
-    WiFi.begin(ssid, password);
 
     Serial.println("");
     Serial.print("Connecting to ");
-    Serial.print(ssid);
+    Serial.println(ssid);
 
+    WiFi.begin(ssid, password);
+    int tryCount = 0;
     while (WiFi.status() != WL_CONNECTED) {
-      Serial.print(".");
       tryCount++;
-      delay(500);
-      if (tryCount > 5) {
+      Serial.println(tryCount);
+      delay(750);
+      if (tryCount > 6) {
         ssid = "";
         password = "";
         Serial.println("ERROR TRYING TO CONNECTING");
@@ -152,47 +194,83 @@ void initSTA() {
       Serial.println("IP address: ");
       Serial.println(WiFi.localIP());
 
-      //WiFi.mode(WIFI_STA);
+      // Procedimiento para guardar los datos en la EEPROM
+
+      EEPROM.writeString(10, ssid);
+      EEPROM.commit();
+
+      EEPROM.writeString(20, password);
+      EEPROM.commit();
+
+      EEPROM.writeByte(0, 1);   // E indicamos que la proxima vez no inicie el modo AP
+      EEPROM.commit();
     }
   }
 }
 
-String processor(const String & var) {
-  //Serial.println(var);
-  if (var == "IP") {
-    return readIP();
-  }
+void initAP() {
+  WiFi.softAP(soft_ap_ssid, soft_ap_password);
+
+  Serial.println("");
+  Serial.print("ESP32 IP as soft AP: ");
+  Serial.println(WiFi.softAPIP());
 }
 
 void setup() {
   // Init LED and turn off
-  pinMode(led_pin, OUTPUT);
-  digitalWrite(led_pin, LOW);
+  pinMode(lights, OUTPUT);
+  pinMode(filter, OUTPUT);
+  pinMode(cascade, OUTPUT);
+  pinMode(jacuzzi, OUTPUT);
+
+  digitalWrite(lights, LOW);
+  digitalWrite(filter, LOW);
+  digitalWrite(cascade, LOW);
+  digitalWrite(jacuzzi, LOW);
 
   // Start Serial port
   Serial.begin(115200);
 
-  // Start ESP32 Wifi Mode as Access Point (AP) and Station Mode (STA)
-  WiFi.mode(WIFI_MODE_APSTA);
+  // EEPROM Begin
+  EEPROM.begin(64);
+  delay(10);
+
+  // Read the state if we start as STA: 1 or FACTORY: 0
+  /*
+    EEPROM.writeByte(0, 0);
+    EEPROM.commit();
+  */
+  int state = EEPROM.readByte(0);
+
+  Serial.println(state);
+
+  if (state == 0) {
+    // Start ESP32 Wifi Mode as Access Point (AP) and Station Mode (STA)
+    Serial.println("WIFI MODE: APSTA");
+    WiFi.mode(WIFI_MODE_APSTA);
+
+    initAP();
+  } else if (state == 1) {
+    Serial.println("WIFI MODE: STA");
+    WiFi.mode(WIFI_STA);
+
+    Serial.println(EEPROM.readString(10));
+    Serial.println(EEPROM.readString(20));
+
+    String wifi = EEPROM.readString(10);
+    String pass = EEPROM.readString(20);
+
+    ssid = wifi.c_str();
+    password = pass.c_str();
+
+    initSTA();
+  }
 
   // Make sure we can read the file system
   if ( !SPIFFS.begin()) {
     Serial.println("Error mounting SPIFFS");
     while (1);
   }
-
-  // Start the WiFi STA Mode
-  //  If we have the ssid and password we try to connect
-  initSTA();
-  // End the WiFi STA Mode
-
-  // Start the WiFi AP Mode
-  WiFi.softAP(soft_ap_ssid, soft_ap_password);
-
-  Serial.println("");
-  Serial.print("ESP32 IP as soft AP: ");
-  Serial.println(WiFi.softAPIP());
-  // End the WiFi AP Mode
 
 
   server.on("/", HTTP_GET, [](AsyncWebServerRequest * request) {
@@ -228,9 +306,40 @@ void setup() {
     }
   });
 
+  server.on("/lights", HTTP_GET, [](AsyncWebServerRequest * request) {
+    request->send(SPIFFS, "/img/lights.png", "image/png");
+  });
+
+  server.on("/lights_off", HTTP_GET, [](AsyncWebServerRequest * request) {
+    request->send(SPIFFS, "/img/lights_off.png", "image/png");
+  });
+  
+  server.on("/filter", HTTP_GET, [](AsyncWebServerRequest * request) {
+    request->send(SPIFFS, "/img/filter.png", "image/png");
+  });
+  
+  server.on("/filter_off", HTTP_GET, [](AsyncWebServerRequest * request) {
+    request->send(SPIFFS, "/img/filter_off.png", "image/png");
+  });
+
+  server.on("/jacuzzi", HTTP_GET, [](AsyncWebServerRequest * request) {
+    request->send(SPIFFS, "/img/jacuzzi.png", "image/png");
+  });
+  
+  server.on("/jacuzzi_off", HTTP_GET, [](AsyncWebServerRequest * request) {
+    request->send(SPIFFS, "/img/jacuzzi_off.png", "image/png");
+  });
+
+  server.on("/waterfall", HTTP_GET, [](AsyncWebServerRequest * request) {
+    request->send(SPIFFS, "/img/waterfall.png", "image/png");
+  });
+
+  server.on("/waterfall_off", HTTP_GET, [](AsyncWebServerRequest * request) {
+    request->send(SPIFFS, "/img/waterfall_off.png", "image/png");
+  });
+
   server.on("/ip", HTTP_GET, [](AsyncWebServerRequest * request) {
     if (ON_AP_FILTER(request)) {
-      Serial.println("THERE U GO BOY");
       request->send(200, "text/plain", readIP().c_str());
     }
   });
