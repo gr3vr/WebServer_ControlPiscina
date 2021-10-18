@@ -3,10 +3,16 @@
 #include <SPIFFS.h>
 #include <ESPAsyncWebServer.h>
 #include <WebSocketsServer.h>
+#include <ModbusIP_ESP8266.h>
 
 #define ssid_address  1
 #define pass_address  2
 #define state_address  3
+
+#define light_register    2
+#define filter_register   3
+#define cascade_register  4
+#define jacuzzi_register  5
 
 // Constants
 
@@ -48,6 +54,8 @@ int jacuzzi_state = 0;
 /***********************************************************
    Functions
 */
+
+ModbusIP mb;
 
 // Callback: receiving any WebSocket message
 void onWebSocketEvent(uint8_t client_num,
@@ -264,6 +272,12 @@ void setup() {
     password = pass.c_str();
 
     initSTA();
+
+    mb.server();    //Start Modbus IP
+    mb.addCoil(light_register);
+    mb.addCoil(filter_register);
+    mb.addCoil(cascade_register);
+    mb.addCoil(filter_register);
   }
 
   // Make sure we can read the file system
@@ -313,11 +327,11 @@ void setup() {
   server.on("/lights_off", HTTP_GET, [](AsyncWebServerRequest * request) {
     request->send(SPIFFS, "/img/lights_off.png", "image/png");
   });
-  
+
   server.on("/filter", HTTP_GET, [](AsyncWebServerRequest * request) {
     request->send(SPIFFS, "/img/filter.png", "image/png");
   });
-  
+
   server.on("/filter_off", HTTP_GET, [](AsyncWebServerRequest * request) {
     request->send(SPIFFS, "/img/filter_off.png", "image/png");
   });
@@ -325,7 +339,7 @@ void setup() {
   server.on("/jacuzzi", HTTP_GET, [](AsyncWebServerRequest * request) {
     request->send(SPIFFS, "/img/jacuzzi.png", "image/png");
   });
-  
+
   server.on("/jacuzzi_off", HTTP_GET, [](AsyncWebServerRequest * request) {
     request->send(SPIFFS, "/img/jacuzzi_off.png", "image/png");
   });
@@ -362,4 +376,9 @@ void setup() {
 void loop() {
   // Look for and handle WebSocket data
   webSocket.loop();
+  mb.task();
+  mb.Coil(light_register, digitalRead(lights));
+  mb.Coil(filter_register, digitalRead(filter));
+  mb.Coil(cascade_register, digitalRead(cascade));
+  mb.Coil(jacuzzi_register, digitalRead(jacuzzi));
 }
