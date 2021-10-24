@@ -14,6 +14,10 @@
 #define cascade_register  4
 #define jacuzzi_register  5
 
+#define resetButton 0
+
+#define LED 2
+
 // Constants
 
 //const char  *ssid = "PoolControlSystem";
@@ -34,7 +38,7 @@ const char  *msg_get_led = "getLEDState";
 const int   http_port = 80;
 const int   ws_port = 1337;
 
-const int   lights = 2;
+const int   lights = 15;
 const int   filter = 16;
 const int   cascade = 17;
 const int   jacuzzi = 18;
@@ -202,6 +206,8 @@ void initSTA() {
       Serial.println("IP address: ");
       Serial.println(WiFi.localIP());
 
+
+      digitalWrite(LED, LOW);
       // Procedimiento para guardar los datos en la EEPROM
 
       EEPROM.writeString(10, ssid);
@@ -224,12 +230,33 @@ void initAP() {
   Serial.println(WiFi.softAPIP());
 }
 
+void deleteMemory() {
+  EEPROM.writeString(10, "          ");
+  EEPROM.commit();
+
+  EEPROM.writeString(20, "          ");
+  EEPROM.commit();
+
+  EEPROM.writeByte(0, 0);   // E indicamos que la proxima vez no inicie el modo AP
+  EEPROM.commit();
+
+  Serial.println(EEPROM.readString(10));
+  Serial.println(EEPROM.readString(20));
+  Serial.println(EEPROM.readByte(0));
+}
+
 void setup() {
   // Init LED and turn off
+  pinMode(resetButton, INPUT);
+
+  pinMode(LED, OUTPUT);
+
   pinMode(lights, OUTPUT);
   pinMode(filter, OUTPUT);
   pinMode(cascade, OUTPUT);
   pinMode(jacuzzi, OUTPUT);
+
+  digitalWrite(LED, LOW);
 
   digitalWrite(lights, LOW);
   digitalWrite(filter, LOW);
@@ -255,6 +282,7 @@ void setup() {
   if (state == 0) {
     // Start ESP32 Wifi Mode as Access Point (AP) and Station Mode (STA)
     Serial.println("WIFI MODE: APSTA");
+    digitalWrite(LED, HIGH);
     WiFi.mode(WIFI_MODE_APSTA);
 
     initAP();
@@ -375,7 +403,25 @@ void setup() {
 
 void loop() {
   // Look for and handle WebSocket data
+
   webSocket.loop();
+
+  if ((digitalRead(resetButton)) == 0 ) {
+    Serial.print("START COUNTING...");
+    digitalWrite(LED, HIGH);
+    delay(5000);
+    if ((digitalRead(resetButton)) == 0 ) {
+      Serial.print("RESETTING!");
+      for (int x = 0; x < 5; x++) {
+        digitalWrite(LED, (!digitalRead(LED)));
+        delay(500);
+      }
+      deleteMemory();
+      ESP.restart();
+    }
+    digitalWrite(LED, LOW);
+  }
+
   mb.task();
   mb.Coil(light_register, digitalRead(lights));
   mb.Coil(filter_register, digitalRead(filter));
