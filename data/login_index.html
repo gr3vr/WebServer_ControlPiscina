@@ -2,7 +2,8 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <title>CodePen - Mobile Login Form</title>
+    <link rel="icon" href="wifi" type="image/png" sizes="16x16">
+    <title>WiFi Login</title>
     <style>
       html,
       body {
@@ -80,6 +81,24 @@
         border-bottom-color: #fff;
       }
 
+      .form-item select {
+        font-size: 14px;
+        padding: 4px 0px;
+        flex: 1;
+        background: transparent;
+        border-top: none;
+        outline: none;
+        border-left: none;
+        border-right: none;
+        caret-color: #fff;
+        color: #fff;
+        transition: all 200ms;
+        border-bottom-color: #fff;
+      }
+      .form-item option {
+        background: #3428A6;
+      }
+
       .form-item input:focus {
         border-bottom-color: #2980b9;
       }
@@ -129,7 +148,8 @@
       }
 
       .check-text input {
-        display: none;
+        background: transparent;
+        border: 1px white;
       }
 
       .check-text input ~ span {
@@ -148,13 +168,7 @@
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <meta http-equiv="X-UA-Compatible" content="ie=edge" />
-        <link
-          rel="stylesheet"
-          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"
-          integrity="sha512-SfTiTlX6kk+qitfevl/7LibUOeJWlt9rbyDn92a1DqWOw9vWG2MFoays0sgObmWazO5BQPiFucnnEAjpAB+/Sw=="
-          crossorigin="anonymous"
-          referrerpolicy="no-referrer"
-        />
+        
         <title>Login Form</title>
       </head>
       <body>
@@ -165,13 +179,14 @@
             </div>
             <div class="form-item">
               <label for="email">WiFi:</label>
-              <input
+              <!--<input
                 type="text"
                 name="input1"
                 class="is-input"
                 autocomplete="off"
                 required
-              />
+              />-->
+              <select class="is-input" id= "NetworkSelect" name="input1" type="text"></select>
             </div>
             <div class="form-item">
               <label for="password">Contraseña:</label>
@@ -222,13 +237,51 @@
         navigator.clipboard.writeText(copyText.value);
       }
 
+      var strings = "";
+
+      setInterval(() => {
+        if (strings == "") {
+          var reqq = new XMLHttpRequest();
+
+          reqq.onreadystatechange = function () {
+            if (this.readyState == 4 && this.status == 200) {
+              strings = this.responseText;
+              console.log(typeof strings);
+              console.log(strings);
+              strings = (strings).toString();
+
+              var Networks = strings.split('/');
+
+              var sel = document.getElementById('NetworkSelect');
+
+              for(var i = 0; i < Networks.length; i++) {
+                var opt = document.createElement('option');
+                opt.innerHTML = Networks[i];
+                opt.value = Networks[i];
+                sel.appendChild(opt);
+              }
+            }
+          };
+          reqq.open("GET", "/networks", true);
+          reqq.send();
+
+          if (typeof strings !== 'undefined') {
+            
+          }
+        }
+      }, 1000);
+      
       setInterval(() => {
         var ip = document.getElementById("IP").innerHTML;
         if (ip == "DESCONECTADO") {
           var xhttp = new XMLHttpRequest();
           xhttp.onreadystatechange = function () {
             if (this.readyState == 4 && this.status == 200) {
-              document.getElementById("IP").innerHTML = this.responseText;
+              if (this.responseText == "DESCONECTADO") {
+                document.getElementById("IP").innerHTML = this.responseText;
+              } else {
+                document.getElementById("IP").innerHTML = "COPIE ESTA IP: " + this.responseText;
+              }
             }
           };
           xhttp.open("GET", "/ip", true);

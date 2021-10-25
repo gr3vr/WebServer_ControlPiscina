@@ -1,3 +1,4 @@
+
 #include <WiFi.h>
 #include <EEPROM.h>
 #include <SPIFFS.h>
@@ -42,6 +43,8 @@ const int   lights = 15;
 const int   filter = 16;
 const int   cascade = 17;
 const int   jacuzzi = 18;
+
+String networks = "";
 
 int ip;
 
@@ -180,6 +183,22 @@ String readIP() {
   return String("DESCONECTADO");
 }
 
+void readNetwork() {
+  int n = WiFi.scanNetworks();
+
+  if (n == 0) {
+    networks = "NO NETWORKS FOUND";
+  } else {
+    networks = WiFi.SSID(0);
+    for (int i = 1; i < n; ++i) {
+      // Print SSID and RSSI for each network found
+      networks = networks + "/" + WiFi.SSID(i);
+    }
+  }
+  Serial.println(networks);
+
+}
+
 void initSTA() {
   if ((ssid != "") && (password != "")) {
 
@@ -205,7 +224,6 @@ void initSTA() {
       Serial.println("WiFi connected.");
       Serial.println("IP address: ");
       Serial.println(WiFi.localIP());
-
 
       digitalWrite(LED, LOW);
       // Procedimiento para guardar los datos en la EEPROM
@@ -286,6 +304,7 @@ void setup() {
     WiFi.mode(WIFI_MODE_APSTA);
 
     initAP();
+    readNetwork();
   } else if (state == 1) {
     Serial.println("WIFI MODE: STA");
     WiFi.mode(WIFI_STA);
@@ -305,7 +324,7 @@ void setup() {
     mb.addCoil(light_register);
     mb.addCoil(filter_register);
     mb.addCoil(cascade_register);
-    mb.addCoil(filter_register);
+    mb.addCoil(jacuzzi_register);
   }
 
   // Make sure we can read the file system
@@ -360,6 +379,14 @@ void setup() {
     request->send(SPIFFS, "/img/filter.png", "image/png");
   });
 
+  server.on("/natacion", HTTP_GET, [](AsyncWebServerRequest * request) {
+    request->send(SPIFFS, "/img/natacion.png", "image/png");
+  });
+
+  server.on("/wifi", HTTP_GET, [](AsyncWebServerRequest * request) {
+    request->send(SPIFFS, "/img/wifi.png", "image/png");
+  });
+
   server.on("/filter_off", HTTP_GET, [](AsyncWebServerRequest * request) {
     request->send(SPIFFS, "/img/filter_off.png", "image/png");
   });
@@ -383,6 +410,12 @@ void setup() {
   server.on("/ip", HTTP_GET, [](AsyncWebServerRequest * request) {
     if (ON_AP_FILTER(request)) {
       request->send(200, "text/plain", readIP().c_str());
+    }
+  });
+
+  server.on("/networks", HTTP_GET, [](AsyncWebServerRequest * request) {
+    if (ON_AP_FILTER(request)) {
+      request->send(200, "text/plain", networks.c_str());
     }
   });
 
@@ -413,8 +446,10 @@ void loop() {
     if ((digitalRead(resetButton)) == 0 ) {
       Serial.print("RESETTING!");
       for (int x = 0; x < 5; x++) {
-        digitalWrite(LED, (!digitalRead(LED)));
-        delay(500);
+        digitalWrite(LED, LOW);
+        delay(200);
+        digitalWrite(LED, HIGH);
+        delay(200);
       }
       deleteMemory();
       ESP.restart();

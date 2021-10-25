@@ -4,6 +4,7 @@
     <meta charset="UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width" />
+    <link rel="icon" href="natacion" type="image/png" sizes="16x16">
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.css"
@@ -161,14 +162,13 @@
     <script language="javascript" type="text/javascript">
       var output;
       var button;
-      var context;
-
+      var context;     
+      
       // This is called when the page finishes loading
       function init() {
         //alert(window.location);
 
         /*"ws://192.168.0.17:1337/";*/
-
         var url = window.location.host;
         url = "ws://" + url + ":1337/";
 
@@ -327,7 +327,7 @@
           <input type="checkbox" id="lightBtn" onclick="onPress(this.id)" />
           <div class="icon-box">
             <!--<i class="fa fa-heart" aria-hidden="true"></i>-->
-            <img id="light" src="/img/lights_off.png"></img>
+            <img id="light" src="/img/lights_off"></img>
             <span class ="title">LUCES</span>
             <span id ="light-state" class="state">APAGADO</span>
           </div>
